@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Claude Motion</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <strong>Claude Motion</strong>
+    <span id="host" class="pill">…</span>
+    <button id="settingsBtn" class="ghost" title="Settings">⚙</button>
+  </header>
+
+  <section id="settings" hidden>
+    <label>Anthropic API key
+      <input id="apiKey" type="password" placeholder="sk-ant-...">
+    </label>
+    <label>Model
+      <select id="model">
+        <option value="claude-opus-5-5">Claude Opus 5.5 (best)</option>
+        <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (fast)</option>
+        <option value="claude-haiku-5-5">Claude Haiku 5.5 (fastest)</option>
+      </select>
+    </label>
+    <label class="row"><input id="autoRun" type="checkbox"> Run generated scripts automatically</label>
+    <button id="saveSettings">Save</button>
+  </section>
+
+  <section id="presets"></section>
+
+  <div id="log"></div>
+
+  <footer>
+    <textarea id="prompt" rows="3" placeholder="e.g. Add a lower third saying 'Himan — Editor' with a slide-in animation"></textarea>
+    <div class="row">
+      <button id="send">Send to Claude</button>
+      <button id="clear" class="ghost">Clear</button>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
