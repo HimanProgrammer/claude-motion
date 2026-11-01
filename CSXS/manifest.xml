@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="7.0" ExtensionBundleId="com.drivesync.claudemotion" ExtensionBundleVersion="1.0.0" ExtensionBundleName="Claude Motion">
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.drivesync.claudemotion" ExtensionBundleVersion="1.2.0" ExtensionBundleName="Claude Motion">
   <ExtensionList>
     <Extension Id="com.drivesync.claudemotion.panel" Version="1.0.0"/>
   </ExtensionList>

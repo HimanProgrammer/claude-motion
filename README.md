@@ -30,6 +30,11 @@ Claude sees your active comp/sequence and writes an ExtendScript, and the panel 
 4. Click ⚙, choose a connection mode (free copy/paste works with no key), then **Save**.
 5. After Effects only: turn on *Preferences → Scripting & Expressions → Allow Scripts to Write Files and Access Network*.
 
+### Automatic updates
+Every time the panel opens it checks this GitHub repo. If `version.json` has a newer version, it downloads the new files into the extension folder and reloads itself — no ZIP needed. If the update changed `jsx/` or `CSXS/`, it asks you to restart the Adobe app once.
+
+*For maintainers:* to ship an update, bump `"version"` in `version.json` (and list any new files there), then push to `main`.
+
 To distribute it, sign the folder into a `.zxp` with Adobe's `ZXPSignCmd`.
 
 ## Files
