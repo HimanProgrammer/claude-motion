@@ -1,0 +1,40 @@
+{
+  "manifest_version": "0.2",
+  "name": "claude-motion",
+  "display_name": "Claude Motion — Premiere Pro & After Effects",
+  "version": "1.3.0",
+  "description": "Edit in Adobe Premiere Pro and animate in After Effects by chatting with Claude.",
+  "long_description": "Connects Claude Desktop to the Claude Motion panel inside Premiere Pro and After Effects. Claude can read your active sequence or comp and run edits live: cuts, markers, transitions, sequences, titles, keyframes and expressions. Requires the Claude Motion CEP panel (https://github.com/HimanProgrammer/claude-motion) to be open in the Adobe app.",
+  "author": { "name": "HimanProgrammer", "url": "https://github.com/HimanProgrammer" },
+  "homepage": "https://github.com/HimanProgrammer/claude-motion",
+  "repository": { "type": "git", "url": "https://github.com/HimanProgrammer/claude-motion" },
+  "keywords": ["premiere", "after effects", "adobe", "video editing", "motion graphics"],
+  "license": "MIT",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/index.js"],
+      "env": { "CLAUDE_MOTION_PORT": "${user_config.port}" }
+    }
+  },
+  "tools": [
+    { "name": "get_status", "description": "Which Adobe apps have the Claude Motion panel connected" },
+    { "name": "get_project_state", "description": "Active comp (After Effects) or sequence (Premiere) as JSON" },
+    { "name": "run_extendscript", "description": "Run an ExtendScript edit live in Premiere Pro or After Effects" }
+  ],
+  "user_config": {
+    "port": {
+      "type": "string",
+      "title": "Bridge port",
+      "description": "Local port shared with the Claude Motion panel. Leave as 8765 unless you changed it.",
+      "default": "8765",
+      "required": false
+    }
+  },
+  "compatibility": {
+    "platforms": ["win32", "darwin"],
+    "runtimes": { "node": ">=18.0.0" }
+  }
+}

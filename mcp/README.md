@@ -6,7 +6,12 @@ Claude Desktop  ⇄ (MCP, stdio)  mcp/server.js  ⇄ (127.0.0.1:8765)  Claude Mo
 
 No npm install and no API key. It needs **Node.js 18+** (nodejs.org) and **Claude Desktop** (claude.ai/download).
 
-## Setup (Windows)
+## Easiest: one-click install (.mcpb)
+1. Download **`claude-motion.mcpb`** from the repo root. If your Claude Desktop is older, use `claude-motion.dxt` instead.
+2. Double-click it, or drag it into **Claude Desktop → Settings → Extensions**, then click **Install**.
+3. Open the Claude Motion panel in Premiere / After Effects. The pill turns green. Done; no Node.js install needed.
+
+## Manual setup (Windows)
 1. Install Node.js (LTS) from https://nodejs.org.
 2. Make sure the Claude Motion panel is installed and up to date (v1.3.0+). It updates itself when opened.
 3. Open Claude Desktop and go to **Settings → Developer → Edit Config**. This opens `claude_desktop_config.json`.
