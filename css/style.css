@@ -30,3 +30,4 @@ pre { background: #111; padding: 6px; border-radius: 4px; overflow-x: auto; max-
 footer { border-top: 1px solid #333; display: grid; gap: 6px; }
 .paste { display: grid; gap: 6px; margin-top: 6px; }
 .paste textarea { min-height: 70px; }
+#bridge.on { background: #1f4d2e; color: #8fe0a8; }

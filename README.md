@@ -12,6 +12,9 @@ Claude sees your active comp/sequence and writes an ExtendScript, and the panel 
 - Ready-made presets for common editing and motion graphics jobs.
 - Choose Opus 5.5, Sonnet 5.5 or Haiku 5.5.
 
+## 🔌 Chat-control from Claude Desktop (MCP connector)
+Edit live by chatting in Claude Desktop — see **[mcp/README.md](mcp/README.md)**.
+
 ## Connection modes (pick in ⚙ Settings)
 | Mode | Cost | How it works |
 |---|---|---|

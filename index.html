@@ -9,6 +9,7 @@
   <header>
     <strong>Claude Motion</strong>
     <span id="host" class="pill">…</span>
+    <span id="bridge" class="pill" title="Claude Desktop connector">● Desktop: off</span>
     <button id="settingsBtn" class="ghost" title="Settings">⚙</button>
   </header>
 
@@ -38,6 +39,7 @@
       </select>
     </label>
     <label class="row"><input id="autoRun" type="checkbox"> Run generated scripts automatically</label>
+    <label class="row"><input id="bridgeOn" type="checkbox" checked> Allow Claude Desktop (MCP connector) to control this app</label>
     <button id="saveSettings">Save</button>
   </section>
 
@@ -54,6 +56,7 @@
   </footer>
 
   <script src="js/main.js"></script>
+  <script src="js/bridge.js"></script>
   <script src="js/updater.js"></script>
 </body>
 </html>

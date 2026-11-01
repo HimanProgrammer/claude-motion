@@ -251,6 +251,9 @@
     });
   }
 
+  // Expose for the Claude Desktop bridge (js/bridge.js)
+  window.CM = { getContext: getContext, runInHost: runInHost, addMsg: addMsg, hostName: hostName, store: store };
+
   // wiring
   PRESETS.forEach(function (p) {
     var b = document.createElement("button");
