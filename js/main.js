@@ -104,6 +104,30 @@
     });
   }
 
+  function callGemini(messages) {
+    var key = store.get("cm_gkey", "");
+    if (!key) return Promise.reject(new Error("Add your free Google Gemini API key in Settings (⚙)."));
+    var model = store.get("cm_gmodel", "gemini-2.5-flash");
+    return fetch("https://generativelanguage.googleapis.com/v1beta/models/" + model +
+      ":generateContent?key=" + encodeURIComponent(key), {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: systemPrompt() }] },
+        contents: messages.map(function (m) {
+          return { role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] };
+        })
+      })
+    }).then(function (res) {
+      return res.json().then(function (data) {
+        if (!res.ok) throw new Error((data.error && data.error.message) || ("HTTP " + res.status));
+        var c = data.candidates && data.candidates[0];
+        if (!c || !c.content) throw new Error("Gemini returned no answer" + (c && c.finishReason ? " (" + c.finishReason + ")" : "") + ".");
+        return c.content.parts.map(function (p) { return p.text || ""; }).join("");
+      });
+    });
+  }
+
   function extractCode(text) {
     var m = text.match(/```(?:jsx|javascript|js|extendscript)?\s*\n([\s\S]*?)```/);
     return m ? m[1].trim() : null;
@@ -151,10 +175,53 @@
         var fix = document.createElement("button");
         fix.textContent = "Ask Claude to fix";
         fix.style.marginTop = "6px";
-        fix.onclick = function () { fix.disabled = true; send("The script failed with: " + errText + "\nPlease fix it."); };
+        fix.onclick = function () { fix.disabled = true; send("The previous script failed with: " + errText + "\nPlease fix it.\nScript was:\n" + code); };
         d.appendChild(document.createElement("br"));
         d.appendChild(fix);
       }
+    });
+  }
+
+  // ---------- Free mode (no API key): copy prompt -> claude.ai -> paste reply ----------
+  function copyText(t) {
+    var ta = document.createElement("textarea");
+    ta.value = t; document.body.appendChild(ta); ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
+    if (!ok && navigator.clipboard) navigator.clipboard.writeText(t);
+  }
+  function openClaude() {
+    var url = "https://claude.ai/new";
+    if (window.cep && window.cep.util) window.cep.util.openURLInDefaultBrowser(url);
+    else window.open(url, "_blank");
+  }
+  function sendFree(text) {
+    addMsg("user", text);
+    getContext().then(function (ctx) {
+      var prompt = systemPrompt() + "\n\n---\nRequest: " + text +
+        "\n\n<project_state>\n" + JSON.stringify(ctx) + "\n</project_state>";
+      copyText(prompt);
+      var d = addMsg("claude", "1) Prompt copied. Open claude.ai and paste it (Ctrl/⌘+V).\n" +
+        "2) Copy Claude's whole reply and paste it below, then press Use reply.");
+      var box = document.createElement("div"); box.className = "paste";
+      var row = document.createElement("div"); row.className = "row";
+      var openBtn = document.createElement("button"); openBtn.textContent = "Open claude.ai";
+      var againBtn = document.createElement("button"); againBtn.className = "ghost"; againBtn.textContent = "Copy prompt again";
+      row.appendChild(openBtn); row.appendChild(againBtn);
+      var ta = document.createElement("textarea"); ta.placeholder = "Paste Claude's reply here…";
+      var use = document.createElement("button"); use.textContent = "Use reply";
+      box.appendChild(row); box.appendChild(ta); box.appendChild(use);
+      d.appendChild(box);
+      openBtn.onclick = openClaude;
+      againBtn.onclick = function () { copyText(prompt); };
+      use.onclick = function () {
+        var reply = ta.value.trim();
+        if (!reply) return;
+        if (!extractCode(reply) && /^[\s\S]*(app\.|\.layer\(|activeSequence)/.test(reply)) reply = "```jsx\n" + reply + "\n```";
+        box.remove();
+        addClaudeReply(reply);
+      };
     });
   }
 
@@ -162,13 +229,14 @@
   function send(text) {
     text = (text || "").trim();
     if (!text || busy) return;
+    if (store.get("cm_mode", "free") === "free") return sendFree(text);
     busy = true;
     $("send").disabled = true;
     addMsg("user", text);
     var thinking = addMsg("sys", "Claude is working…");
     getContext().then(function (ctx) {
       history.push({ role: "user", content: text + "\n\n<project_state>\n" + JSON.stringify(ctx) + "\n</project_state>" });
-      return callClaude(history);
+      return store.get("cm_mode", "free") === "gemini" ? callGemini(history) : callClaude(history);
     }).then(function (reply) {
       history.push({ role: "assistant", content: reply });
       thinking.remove();
@@ -196,17 +264,32 @@
   });
   $("clear").onclick = function () { history = []; $("log").innerHTML = ""; };
   $("settingsBtn").onclick = function () { $("settings").hidden = !$("settings").hidden; };
+  function syncMode() {
+    var api = $("mode").value === "api";
+    $("gemRow").style.display = $("mode").value === "gemini" ? "" : "none";
+    $("keyRow").style.display = api ? "" : "none";
+    $("modelRow").style.display = api ? "" : "none";
+  }
+  $("mode").value = store.get("cm_mode", "free");
+  $("mode").onchange = syncMode;
+  syncMode();
   $("apiKey").value = store.get("cm_key", "");
+  $("gemKey").value = store.get("cm_gkey", "");
+  $("gemModel").value = store.get("cm_gmodel", "gemini-2.5-flash");
   $("model").value = store.get("cm_model", "claude-opus-5-5");
   $("autoRun").checked = store.get("cm_auto", "0") === "1";
   $("saveSettings").onclick = function () {
+    store.set("cm_mode", $("mode").value);
     store.set("cm_key", $("apiKey").value.trim());
+    store.set("cm_gkey", $("gemKey").value.trim());
+    store.set("cm_gmodel", $("gemModel").value);
     store.set("cm_model", $("model").value);
     store.set("cm_auto", $("autoRun").checked ? "1" : "0");
     $("settings").hidden = true;
     addMsg("sys", "Settings saved.");
   };
-  if (!store.get("cm_key", "")) $("settings").hidden = false;
+  var m0 = store.get("cm_mode", "free");
+  if ((m0 === "api" && !store.get("cm_key", "")) || (m0 === "gemini" && !store.get("cm_gkey", ""))) $("settings").hidden = false;
   addMsg("sys", "Describe an edit or animation (Ctrl/⌘+Enter to send). Claude sees your active " +
     (isPPro ? "sequence" : "comp") + " and writes a script you can run.");
 })();

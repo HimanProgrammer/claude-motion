@@ -12,6 +12,13 @@ Claude sees your active comp/sequence and writes an ExtendScript, and the panel 
 - Ready-made presets for common editing and motion graphics jobs.
 - Choose Opus 5.5, Sonnet 5.5 or Haiku 5.5.
 
+## Connection modes (pick in ⚙ Settings)
+| Mode | Cost | How it works |
+|---|---|---|
+| **Free — copy/paste with claude.ai** (default) | Free | Panel copies a prompt with your comp/sequence info → paste into claude.ai → paste Claude's reply back → **Use reply** → **▶ Run** |
+| **Google Gemini** | Free key, no card | Get a key at aistudio.google.com/apikey, paste it in Settings — fully automatic |
+| **Claude API key** | Paid credits | Fully automatic with Claude Opus/Sonnet/Haiku |
+
 ## Install (unsigned / development)
 1. Turn on unsigned extensions:
    - **Windows:** `reg add HKCU\Software\Adobe\CSXS.11 /v PlayerDebugMode /t REG_SZ /d 1 /f` (also run it for CSXS.10 and CSXS.12)
@@ -20,7 +27,7 @@ Claude sees your active comp/sequence and writes an ExtendScript, and the panel 
    - **Windows:** `%APPDATA%\Adobe\CEP\extensions\ClaudeMotion`
    - **macOS:** `~/Library/Application Support/Adobe/CEP/extensions/ClaudeMotion`
 3. Restart AE or Premiere and open **Window → Extensions → Claude Motion**.
-4. Click ⚙, paste your Anthropic API key (console.anthropic.com), then **Save**.
+4. Click ⚙, choose a connection mode (free copy/paste works with no key), then **Save**.
 5. After Effects only: turn on *Preferences → Scripting & Expressions → Allow Scripts to Write Files and Access Network*.
 
 To distribute it, sign the folder into a `.zxp` with Adobe's `ZXPSignCmd`.

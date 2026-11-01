@@ -13,10 +13,24 @@
   </header>
 
   <section id="settings" hidden>
-    <label>Anthropic API key
+    <label>Connection
+      <select id="mode">
+        <option value="free">Free — copy/paste with claude.ai (no API key)</option>
+        <option value="gemini">Google Gemini — free API key (automatic)</option>
+        <option value="api">Claude API key (automatic, needs credits)</option>
+      </select>
+    </label>
+    <label id="keyRow">Anthropic API key
       <input id="apiKey" type="password" placeholder="sk-ant-...">
     </label>
-    <label>Model
+    <label id="gemRow">Google Gemini API key (free from aistudio.google.com/apikey)
+      <input id="gemKey" type="password" placeholder="AIza...">
+      <select id="gemModel">
+        <option value="gemini-2.5-flash">Gemini 2.5 Flash (free, fast)</option>
+        <option value="gemini-2.5-pro">Gemini 2.5 Pro (free, smarter, lower limits)</option>
+      </select>
+    </label>
+    <label id="modelRow">Model
       <select id="model">
         <option value="claude-opus-5-5">Claude Opus 5.5 (best)</option>
         <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (fast)</option>

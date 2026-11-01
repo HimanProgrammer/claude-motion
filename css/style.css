@@ -28,3 +28,5 @@ button.ghost { background: #3a3a3a; }
 pre { background: #111; padding: 6px; border-radius: 4px; overflow-x: auto; max-height: 220px;
   font: 11px/1.4 Menlo, Consolas, monospace; }
 footer { border-top: 1px solid #333; display: grid; gap: 6px; }
+.paste { display: grid; gap: 6px; margin-top: 6px; }
+.paste textarea { min-height: 70px; }
