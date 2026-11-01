@@ -20,17 +20,21 @@ function cm_json(v) {
   return "{" + o.join(",") + "}";
 }
 
+function cm_r(n) { return Math.round(n * 100) / 100; }
+
 function cm_aeContext() {
   var ctx = { app: "After Effects", version: app.version, project: app.project.file ? app.project.file.name : "(unsaved)" };
   var item = app.project.activeItem;
   if (item && item instanceof CompItem) {
     var layers = [];
-    for (var i = 1; i <= Math.min(item.numLayers, 60); i++) {
+    for (var i = 1; i <= Math.min(item.numLayers, 30); i++) {
       var L = item.layer(i);
-      layers.push({ index: i, name: L.name, type: L.matchName, inPoint: L.inPoint, outPoint: L.outPoint, selected: L.selected });
+      var o = { i: i, n: L.name, t: L.matchName.replace("ADBE ", ""), in: cm_r(L.inPoint), out: cm_r(L.outPoint) };
+      if (L.selected) o.sel = 1;
+      layers.push(o);
     }
-    ctx.activeComp = { name: item.name, width: item.width, height: item.height, duration: item.duration,
-      frameRate: item.frameRate, time: item.time, numLayers: item.numLayers, layers: layers };
+    ctx.activeComp = { name: item.name, w: item.width, h: item.height, dur: cm_r(item.duration),
+      fps: cm_r(item.frameRate), time: cm_r(item.time), numLayers: item.numLayers, layers: layers };
   } else {
     ctx.activeComp = null;
   }
@@ -45,18 +49,21 @@ function cm_pproContext() {
       var out = [];
       for (var t = 0; t < coll.numTracks; t++) {
         var tr = coll[t], clips = [];
-        for (var c = 0; c < Math.min(tr.clips.numItems, 40); c++) {
+        if (!tr.clips.numItems) continue;
+        for (var c = 0; c < Math.min(tr.clips.numItems, 20); c++) {
           var cl = tr.clips[c];
-          clips.push({ index: c, name: cl.name, start: cl.start.seconds, end: cl.end.seconds, selected: cl.isSelected() });
+          var o = { n: cl.name, s: cm_r(cl.start.seconds), e: cm_r(cl.end.seconds) };
+          if (cl.isSelected()) o.sel = 1;
+          clips.push(o);
         }
-        out.push({ kind: kind, index: t, name: tr.name, clips: clips });
+        out.push({ track: (kind === "video" ? "V" : "A") + (t + 1), clips: clips, total: tr.clips.numItems });
       }
       return out;
     };
     ctx.activeSequence = {
-      name: seq.name, playhead: seq.getPlayerPosition().seconds,
-      frameSizeH: seq.frameSizeHorizontal, frameSizeV: seq.frameSizeVertical,
-      videoTracks: tracks(seq.videoTracks, "video"), audioTracks: tracks(seq.audioTracks, "audio")
+      name: seq.name, playhead: cm_r(seq.getPlayerPosition().seconds),
+      w: seq.frameSizeHorizontal, h: seq.frameSizeVertical,
+      tracks: tracks(seq.videoTracks, "video").concat(tracks(seq.audioTracks, "audio"))
     };
   } else {
     ctx.activeSequence = null;
@@ -77,7 +84,9 @@ function cm_run(code) {
     if (ae) app.beginUndoGroup("Claude Motion");
     var result = eval(code);
     if (ae) app.endUndoGroup();
-    return cm_json({ ok: true, result: result === undefined ? null : String(result) });
+    var rs = result === undefined ? null : String(result);
+    if (rs && rs.length > 1500) rs = rs.substring(0, 1500) + "…(truncated)";
+    return cm_json({ ok: true, result: rs });
   } catch (e) {
     if (ae) { try { app.endUndoGroup(); } catch (_) {} }
     return cm_json({ ok: false, error: String(e), line: e.line || null });

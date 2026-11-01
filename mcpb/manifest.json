@@ -2,7 +2,7 @@
   "manifest_version": "0.2",
   "name": "claude-motion",
   "display_name": "Claude Motion — Premiere Pro & After Effects",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Edit in Adobe Premiere Pro and animate in After Effects by chatting with Claude.",
   "long_description": "Connects Claude Desktop to the Claude Motion panel inside Premiere Pro and After Effects. Claude can read your active sequence or comp and run edits live: cuts, markers, transitions, sequences, titles, keyframes and expressions. Requires the Claude Motion CEP panel (https://github.com/HimanProgrammer/claude-motion) to be open in the Adobe app.",
   "author": { "name": "HimanProgrammer", "url": "https://github.com/HimanProgrammer" },

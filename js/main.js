@@ -91,8 +91,8 @@
       },
       body: JSON.stringify({
         model: store.get("cm_model", "claude-opus-5-5"),
-        max_tokens: 8000,
-        system: systemPrompt(),
+        max_tokens: 4000,
+        system: [{ type: "text", text: systemPrompt(), cache_control: { type: "ephemeral" } }],
         messages: messages
       })
     }).then(function (res) {
@@ -101,6 +101,16 @@
         return data.content.filter(function (b) { return b.type === "text"; })
           .map(function (b) { return b.text; }).join("\n");
       });
+    });
+  }
+
+  // Token saver: keep the last 6 messages and drop project snapshots from all but the newest message.
+  function slim(messages) {
+    var m = messages.slice(-6);
+    if (m.length && m[0].role !== "user") m = m.slice(1);
+    return m.map(function (x, i) {
+      if (i === m.length - 1 || x.role !== "user") return x;
+      return { role: x.role, content: x.content.replace(/\n*<project_state>[\s\S]*?<\/project_state>/, "") };
     });
   }
 
@@ -116,7 +126,8 @@
         systemInstruction: { parts: [{ text: systemPrompt() }] },
         contents: messages.map(function (m) {
           return { role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] };
-        })
+        }),
+        generationConfig: { maxOutputTokens: 4000 }
       })
     }).then(function (res) {
       return res.json().then(function (data) {
@@ -236,7 +247,8 @@
     var thinking = addMsg("sys", "Claude is working…");
     getContext().then(function (ctx) {
       history.push({ role: "user", content: text + "\n\n<project_state>\n" + JSON.stringify(ctx) + "\n</project_state>" });
-      return store.get("cm_mode", "free") === "gemini" ? callGemini(history) : callClaude(history);
+      var msgs = slim(history);
+      return store.get("cm_mode", "free") === "gemini" ? callGemini(msgs) : callClaude(msgs);
     }).then(function (reply) {
       history.push({ role: "assistant", content: reply });
       thinking.remove();

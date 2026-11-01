@@ -77,21 +77,15 @@ server.listen(PORT, "127.0.0.1", () => log("bridge listening on 127.0.0.1:" + PO
 
 // ---------- MCP (JSON-RPC over stdio) ----------
 const APP_PROP = { type: "string", enum: ["premiere", "aftereffects"],
-  description: "Target app. Optional if only one app has the Claude Motion panel open." };
+  description: "Optional if only one app is connected." };
 const TOOLS = [
-  { name: "get_status", description: "List which Adobe apps currently have the Claude Motion panel open and connected.",
+  { name: "get_status", description: "Which Adobe apps are connected.",
     inputSchema: { type: "object", properties: {} } },
   { name: "get_project_state",
-    description: "Get a JSON snapshot of the open project: in After Effects the active comp (size, fps, duration, layers, selection); in Premiere the active sequence (tracks, clips, playhead). Call this before editing.",
+    description: "Compact JSON of the active comp (AE) or sequence (Premiere). Call before editing.",
     inputSchema: { type: "object", properties: { app: APP_PROP } } },
   { name: "run_extendscript",
-    description: "Execute ExtendScript in After Effects or Premiere Pro and return the value of the last expression. " +
-      "Rules: ES3 only (var, function; no let/const, arrow functions, template strings, JSON, forEach/map). " +
-      "After Effects: app.project.activeItem is the comp, layers are 1-indexed, use matchNames like 'ADBE Transform Group', " +
-      "set property.expression for expressions, use KeyframeEase for easing; the run is wrapped in a single undo group. " +
-      "Premiere: app.project.activeSequence, Time objects (.seconds/.ticks), seq.videoTracks/audioTracks, track.clips, " +
-      "app.project.importFiles, createNewSequenceFromClips, seq.markers.createMarker; app.enableQE() + qe.* for transitions/razor. " +
-      "Throw new Error('message') on bad state. End the script with a short status string.",
+    description: "Run ExtendScript (ES3: var/function only, no let/const/arrows/JSON/forEach) in the app; returns last expression. AE: app.project.activeItem, 1-indexed layers, matchNames, single undo group. Premiere: app.project.activeSequence, track.clips, Time.seconds, importFiles, createNewSequenceFromClips, markers.createMarker, app.enableQE()+qe for transitions. Throw Error on bad state; end with a short status string.",
     inputSchema: { type: "object", properties: { app: APP_PROP, code: { type: "string", description: "ExtendScript source" } }, required: ["code"] } }
 ];
 
@@ -110,7 +104,8 @@ async function callTool(name, args) {
   const host = pickHost(args.app);
   if (name === "get_project_state") {
     const r = await dispatch(host, { kind: "context" }, 30000);
-    return JSON.stringify(r, null, 1);
+    const t = JSON.stringify(r);
+    return t.length > 6000 ? t.slice(0, 6000) + "…(truncated)" : t;
   }
   if (name === "run_extendscript") {
     const r = await dispatch(host, { kind: "run", code: String(args.code || "") }, 120000);
@@ -129,7 +124,7 @@ async function handle(msg) {
   try {
     if (method === "initialize") {
       return reply(id, { protocolVersion: (params && params.protocolVersion) || "2025-06-18",
-        capabilities: { tools: {} }, serverInfo: { name: "claude-motion", version: "1.3.0" },
+        capabilities: { tools: {} }, serverInfo: { name: "claude-motion", version: "1.3.1" },
         instructions: "Controls Adobe Premiere Pro and After Effects through the Claude Motion panel. Call get_project_state first, then run_extendscript." });
     }
     if (method === "ping") return reply(id, {});
